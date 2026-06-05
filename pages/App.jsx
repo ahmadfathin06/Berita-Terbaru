@@ -108,11 +108,11 @@ function fallbackImage(event) {
 // ==================== SHARED COMPONENTS ====================
 function Badge({ category }) {
   const colors = {
-    Teknologi: "bg-blue-100 text-blue-700",
-    Ekonomi: "bg-emerald-100 text-emerald-700",
-    Olahraga: "bg-orange-100 text-orange-700",
-    Kesehatan: "bg-rose-100 text-rose-700",
-    Lingkungan: "bg-teal-100 text-teal-700",
+    Teknologi: "bg-blue-100 text-blue-700 flex justify-center items-center gap-1",
+    Ekonomi: "bg-emerald-100 text-emerald-700 flex justify-center items-center gap-1",
+    Olahraga: "bg-orange-100 text-orange-700 flex justify-center items-center gap-1",
+    Kesehatan: "bg-rose-100 text-rose-700 flex justify-center items-center gap-1",
+    Lingkungan: "bg-teal-100 text-teal-700 flex justify-center items-center gap-1",
   };
   return (
     <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${colors[category] || "bg-slate-100 text-slate-700"}`}>
