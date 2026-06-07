@@ -1,5 +1,5 @@
 import { BrowserRouter, NavLink, Outlet, Route, Routes, useNavigate, useParams } from "react-router-dom";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 
 // ==================== DATA ARTIKEL ====================
 const ALL_ARTICLES = [
@@ -13,6 +13,8 @@ const ALL_ARTICLES = [
     readTime: "4 menit",
     image: "/META AI.jpg",
     featured: true,
+    views: 48200,
+    hot: true,
   },
   {
     id: 2,
@@ -22,8 +24,10 @@ const ALL_ARTICLES = [
     author: "Sari Dewi",
     date: "3 Jun 2026",
     readTime: "3 menit",
-    image: "/TREDING.jpg",
+    image: "/Dollars.jpg",
     featured: false,
+    views: 31500,
+    hot: false,
   },
   {
     id: 3,
@@ -35,6 +39,8 @@ const ALL_ARTICLES = [
     readTime: "5 menit",
     image: "/Badminton.jpg",
     featured: true,
+    views: 92700,
+    hot: true,
   },
   {
     id: 4,
@@ -46,6 +52,8 @@ const ALL_ARTICLES = [
     readTime: "3 menit",
     image: "/Teknologi.jpg",
     featured: false,
+    views: 24100,
+    hot: false,
   },
   {
     id: 5,
@@ -57,6 +65,8 @@ const ALL_ARTICLES = [
     readTime: "6 menit",
     image: "/Brain.jpg",
     featured: false,
+    views: 38900,
+    hot: true,
   },
   {
     id: 6,
@@ -68,6 +78,8 @@ const ALL_ARTICLES = [
     readTime: "4 menit",
     image: "/Sunset.jpg",
     featured: false,
+    views: 19400,
+    hot: false,
   },
   {
     id: 7,
@@ -77,8 +89,10 @@ const ALL_ARTICLES = [
     author: "Dian Puspita",
     date: "31 Mei 2026",
     readTime: "3 menit",
-    image: "/Dollar.jpg",
+    image: "/TREDING.jpg",
     featured: false,
+    views: 27300,
+    hot: false,
   },
   {
     id: 8,
@@ -90,11 +104,13 @@ const ALL_ARTICLES = [
     readTime: "4 menit",
     image: "/SepakBola.jpg",
     featured: false,
+    views: 55600,
+    hot: true,
   },
 ];
 
 const CATEGORIES = ["Semua", "Teknologi", "Ekonomi", "Olahraga", "Kesehatan", "Lingkungan"];
-const FALLBACK_IMAGE = "/TREDING.jpg"; // Gambar cadangan yang ada
+const FALLBACK_IMAGE = "/TREDING.jpg";
 
 // ==================== CONTEXT ====================
 const AppContext = createContext(null);
@@ -105,14 +121,19 @@ function fallbackImage(event) {
   event.currentTarget.src = FALLBACK_IMAGE;
 }
 
+function formatViews(n) {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(".0", "") + "rb";
+  return n.toString();
+}
+
 // ==================== SHARED COMPONENTS ====================
 function Badge({ category }) {
   const colors = {
-    Teknologi: "bg-blue-100 text-blue-700 flex justify-center items-center gap-1",
-    Ekonomi: "bg-emerald-100 text-emerald-700 flex justify-center items-center gap-1",
-    Olahraga: "bg-orange-100 text-orange-700 flex justify-center items-center gap-1",
-    Kesehatan: "bg-rose-100 text-rose-700 flex justify-center items-center gap-1",
-    Lingkungan: "bg-teal-100 text-teal-700 flex justify-center items-center gap-1",
+    Teknologi: "bg-blue-100 text-blue-700",
+    Ekonomi: "bg-emerald-100 text-emerald-700",
+    Olahraga: "bg-orange-100 text-orange-700",
+    Kesehatan: "bg-rose-100 text-rose-700",
+    Lingkungan: "bg-teal-100 text-teal-700",
   };
   return (
     <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${colors[category] || "bg-slate-100 text-slate-700"}`}>
@@ -136,7 +157,7 @@ function BookmarkButton({ id }) {
     <button
       type="button"
       onClick={(e) => { e.stopPropagation(); toggleBookmark(id); }}
-      className={`absolute top-4 right-4 w-9 h-9 flex items-center justify-center text-2xl transition-all rounded-full hover:scale-110 z-10 ${saved ? 'text-amber-500' : 'text-white drop-shadow-lg'}`}
+      className={`absolute top-4 right-4 w-9 h-9 flex items-center justify-center text-2xl transition-all rounded-full hover:scale-110 z-10 ${saved ? "text-amber-500" : "text-white drop-shadow-lg"}`}
     >
       {saved ? "★" : "☆"}
     </button>
@@ -156,13 +177,11 @@ function Header() {
             <p className="text-xs text-slate-500 -mt-1">Berita Terbaru</p>
           </div>
         </NavLink>
-
         <nav className="flex gap-2">
-          <NavLink to="/" end className={({ isActive }) => `px-6 py-3 rounded-full font-medium transition ${isActive ? 'bg-amber-500 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Beranda</NavLink>
-          <NavLink to="/service" className={({ isActive }) => `px-6 py-3 rounded-full font-medium transition ${isActive ? 'bg-amber-500 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Service</NavLink>
-          <NavLink to="/bookmarks" className={({ isActive }) => `px-6 py-3 rounded-full font-medium transition ${isActive ? 'bg-amber-500 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>Tersimpan</NavLink>
+          <NavLink to="/" end className={({ isActive }) => `px-6 py-3 rounded-full font-medium transition ${isActive ? "bg-amber-500 text-white" : "text-slate-600 hover:bg-slate-100"}`}>Beranda</NavLink>
+          <NavLink to="/service" className={({ isActive }) => `px-6 py-3 rounded-full font-medium transition ${isActive ? "bg-amber-500 text-white" : "text-slate-600 hover:bg-slate-100"}`}>Service</NavLink>
+          <NavLink to="/bookmarks" className={({ isActive }) => `px-6 py-3 rounded-full font-medium transition ${isActive ? "bg-amber-500 text-white" : "text-slate-600 hover:bg-slate-100"}`}>Tersimpan</NavLink>
         </nav>
-
         <div className="bg-amber-100 text-amber-700 text-sm font-semibold px-5 py-2.5 rounded-full">
           {bookmarks.length} tersimpan
         </div>
@@ -224,7 +243,259 @@ function Sidebar({ trending, onSelect }) {
   );
 }
 
+// ==================== POPULAR NEWS SECTION ====================
+function PopularNewsSection({ articles, onSelect }) {
+  const [activeTab, setActiveTab] = useState("views");
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const sorted = [...articles].sort((a, b) =>
+    activeTab === "views" ? b.views - a.views : (b.featured === a.featured ? 0 : b.featured ? 1 : -1)
+  ).slice(0, 6);
+
+  const topArticle = sorted[0];
+  const restArticles = sorted.slice(1);
+
+  const rankColors = [
+    "from-amber-500 to-orange-500",
+    "from-slate-400 to-slate-500",
+    "from-amber-700 to-amber-800",
+    "from-slate-300 to-slate-400",
+    "from-slate-300 to-slate-400",
+  ];
+
+  return (
+    <section
+      ref={sectionRef}
+      className="mt-20 mb-4"
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "translateY(0)" : "translateY(40px)",
+        transition: "opacity 0.7s ease, transform 0.7s ease",
+      }}
+    >
+      {/* Section Header */}
+      <div className="relative mb-10">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-3xl opacity-10" />
+        <div className="relative bg-white border border-amber-200 rounded-3xl px-10 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex items-center gap-5">
+            {/* Animated fire icon */}
+            <div className="relative">
+              <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-red-500 rounded-2xl flex items-center justify-center shadow-lg"
+                style={{ boxShadow: "0 0 24px rgba(245,158,11,0.4)" }}>
+                <span className="text-3xl" style={{ filter: "drop-shadow(0 0 6px rgba(255,200,0,0.8))" }}>🔥</span>
+              </div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping opacity-75" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3">
+                <p className="text-xs font-bold tracking-[0.2em] text-amber-600 uppercase">Sorotan Utama</p>
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
+              </div>
+              <h2 className="text-3xl font-black text-slate-900 mt-1 leading-tight">
+                Berita Terpopuler
+              </h2>
+              <p className="text-slate-500 text-sm mt-1">Diperbarui setiap jam · berdasarkan pembaca aktif</p>
+            </div>
+          </div>
+
+          {/* Tab switcher */}
+          <div className="flex gap-2 bg-slate-100 p-1 rounded-2xl">
+            <button
+              onClick={() => setActiveTab("views")}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "views" ? "bg-amber-500 text-white shadow-md" : "text-slate-600 hover:text-slate-900"}`}
+            >
+              👁 Terbanyak Dilihat
+            </button>
+            <button
+              onClick={() => setActiveTab("featured")}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${activeTab === "featured" ? "bg-amber-500 text-white shadow-md" : "text-slate-600 hover:text-slate-900"}`}
+            >
+              ⭐ Pilihan Editor
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* Hero Card — #1 */}
+        {topArticle && (
+          <div
+            className="lg:col-span-6"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "translateY(0)" : "translateY(30px)",
+              transition: "opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s",
+            }}
+          >
+            <article
+              onClick={() => onSelect(topArticle)}
+              className="group relative h-full min-h-80 rounded-3xl overflow-hidden cursor-pointer"
+              style={{ boxShadow: "0 25px 60px rgba(0,0,0,0.18)" }}
+            >
+              <img
+                src={topArticle.image}
+                alt={topArticle.title}
+                onError={fallbackImage}
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+
+              {/* Rank badge */}
+              <div className="absolute top-5 left-5 flex items-center gap-2">
+                <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white font-black text-sm px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+                  <span>🏆</span> <span>#1 TERPOPULER</span>
+                </div>
+                {topArticle.hot && (
+                  <div className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                    🔥 HOT
+                  </div>
+                )}
+              </div>
+              <BookmarkButton id={topArticle.id} />
+
+              {/* Content */}
+              <div className="absolute bottom-0 left-0 right-0 p-7">
+                <Badge category={topArticle.category} />
+                <h3 className="text-white text-2xl font-bold mt-3 leading-tight group-hover:text-amber-300 transition-colors line-clamp-3">
+                  {topArticle.title}
+                </h3>
+                <p className="text-white/70 text-sm mt-2 line-clamp-2">{topArticle.excerpt}</p>
+                <div className="flex items-center justify-between mt-4">
+                  <div className="text-white/60 text-sm">{topArticle.author} · {topArticle.date}</div>
+                  <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                    <span className="text-white text-xs">👁</span>
+                    <span className="text-white text-xs font-bold">{formatViews(topArticle.views)}</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        )}
+
+        {/* Right column: ranked list */}
+        <div className="lg:col-span-6 flex flex-col gap-4">
+          {restArticles.map((article, idx) => (
+            <article
+              key={article.id}
+              onClick={() => onSelect(article)}
+              className="group flex gap-4 bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:shadow-xl hover:border-amber-300 transition-all"
+              style={{
+                opacity: isVisible ? 1 : 0,
+                transform: isVisible ? "translateX(0)" : "translateX(40px)",
+                transition: `opacity 0.5s ease ${0.15 + idx * 0.08}s, transform 0.5s ease ${0.15 + idx * 0.08}s`,
+              }}
+            >
+              {/* Rank number */}
+              <div className={`w-14 flex-shrink-0 bg-gradient-to-b ${rankColors[idx] || "from-slate-200 to-slate-300"} flex items-center justify-center`}>
+                <span className="text-white font-black text-2xl">#{idx + 2}</span>
+              </div>
+
+              {/* Thumbnail */}
+              <div className="w-24 flex-shrink-0 relative">
+                <img
+                  src={article.image}
+                  alt={article.title}
+                  onError={fallbackImage}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                {article.hot && (
+                  <div className="absolute top-1 left-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded font-bold">🔥</div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 py-3 pr-4 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge category={article.category} />
+                  </div>
+                  <h4 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-amber-600 transition-colors">
+                    {article.title}
+                  </h4>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-xs text-slate-500">{article.date}</span>
+                  <div className="flex items-center gap-1 text-xs text-slate-400">
+                    <span>👁</span>
+                    <span className="font-semibold text-slate-600">{formatViews(article.views)}</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom stats bar */}
+      <div className="mt-8 bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl px-8 py-6 flex flex-wrap gap-8 items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse" />
+          <span className="text-slate-300 text-sm font-medium">Pembaca aktif sekarang</span>
+        </div>
+        <div className="flex flex-wrap gap-6">
+          {sorted.slice(0, 4).map((a, i) => (
+            <button
+              key={a.id}
+              onClick={() => onSelect(a)}
+              className="flex items-center gap-2 group"
+            >
+              <span className="text-amber-400 font-black text-sm">#{i + 1}</span>
+              <span className="text-slate-400 text-xs group-hover:text-white transition-colors line-clamp-1 max-w-32">{a.title}</span>
+              <span className="text-slate-500 text-xs">· {formatViews(a.views)}</span>
+            </button>
+          ))}
+        </div>
+        <div className="text-slate-500 text-xs">Data diperbarui: {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB</div>
+      </div>
+    </section>
+  );
+}
+
 // ==================== PAGES ====================
+function SearchBar({ value, onChange }) {
+  return (
+    <div className="relative max-w-xl w-full">
+      <input
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Cari berita..."
+        className="w-full bg-white border border-slate-300 focus:border-amber-500 rounded-3xl px-6 py-4 outline-none"
+      />
+      {value && <button onClick={() => onChange("")} className="absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-slate-400">×</button>}
+    </div>
+  );
+}
+
+function CategoryTabs({ activeCategory, onChange }) {
+  return (
+    <div className="flex flex-wrap gap-3">
+      {CATEGORIES.map(cat => (
+        <button
+          key={cat}
+          onClick={() => onChange(cat)}
+          className={`px-6 py-3 rounded-3xl text-sm font-medium transition ${cat === activeCategory ? "bg-amber-500 text-white" : "bg-white border border-slate-200 hover:bg-slate-50"}`}
+        >
+          {cat}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function HomePage() {
   const [articles, setArticles] = useState([]);
   const [search, setSearch] = useState("");
@@ -255,8 +526,8 @@ function HomePage() {
         <h1 className="text-4xl md:text-5xl font-bold mt-4 leading-tight">Berita terbaru, cepat, dan terpercaya</h1>
         <p className="mt-6 text-lg text-amber-100">Pantau perkembangan penting setiap hari.</p>
         <div className="mt-8 flex gap-4">
-          <button onClick={() => navigate('/bookmarks')} className="bg-white text-slate-900 px-8 py-4 rounded-2xl font-semibold">Lihat Tersimpan</button>
-          <button onClick={() => setFeaturedOnly(!featuredOnly)} className="border border-white/40 px-8 py-4 rounded-2xl"> {featuredOnly ? "Tampilkan Semua" : "Hanya Featured"} </button>
+          <button onClick={() => navigate("/bookmarks")} className="bg-white text-slate-900 px-8 py-4 rounded-2xl font-semibold">Lihat Tersimpan</button>
+          <button onClick={() => setFeaturedOnly(!featuredOnly)} className="border border-white/40 px-8 py-4 rounded-2xl">{featuredOnly ? "Tampilkan Semua" : "Hanya Featured"}</button>
         </div>
       </div>
 
@@ -278,54 +549,26 @@ function HomePage() {
             {filteredArticles.map(a => <ArticleCard key={a.id} article={a} onSelect={handleSelect} />)}
           </div>
         </main>
-
         <div className="lg:col-span-4">
           <Sidebar trending={trendingArticles} onSelect={handleSelect} />
         </div>
       </div>
+
+      {/* ====== POPULAR NEWS SECTION ====== */}
+      {articles.length > 0 && (
+        <PopularNewsSection articles={articles} onSelect={handleSelect} />
+      )}
     </div>
   );
 }
 
-function SearchBar({ value, onChange }) {
-  return (
-    <div className="relative max-w-xl w-full">
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Cari berita..."
-        className="w-full bg-white border border-slate-300 focus:border-amber-500 rounded-3xl px-6 py-4 outline-none"
-      />
-      {value && <button onClick={() => onChange("")} className="absolute right-5 top-1/2 -translate-y-1/2 text-2xl text-slate-400">×</button>}
-    </div>
-  );
-}
-
-function CategoryTabs({ activeCategory, onChange }) {
-  return (
-    <div className="flex flex-wrap gap-3">
-      {CATEGORIES.map(cat => (
-        <button
-          key={cat}
-          onClick={() => onChange(cat)}
-          className={`px-6 py-3 rounded-3xl text-sm font-medium transition ${cat === activeCategory ? 'bg-amber-500 text-white' : 'bg-white border border-slate-200 hover:bg-slate-50'}`}
-        >
-          {cat}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ServicePage, BookmarksPage, ArticleDetail, NotFound, Toast, AppLayout tetap sama seperti sebelumnya
 function ServicePage() {
   const navigate = useNavigate();
   return (
     <div className="max-w-4xl mx-auto px-6 py-16 text-center">
       <h1 className="text-4xl font-bold">Service KabarID</h1>
       <p className="mt-4 text-lg">Fitur lengkap untuk pengalaman membaca berita terbaik.</p>
-      <button onClick={() => navigate('/')} className="mt-10 bg-amber-500 text-white px-8 py-4 rounded-2xl">Kembali ke Beranda</button>
+      <button onClick={() => navigate("/")} className="mt-10 bg-amber-500 text-white px-8 py-4 rounded-2xl">Kembali ke Beranda</button>
     </div>
   );
 }
@@ -334,12 +577,11 @@ function BookmarksPage() {
   const { bookmarks } = useApp();
   const navigate = useNavigate();
   const saved = ALL_ARTICLES.filter(a => bookmarks.includes(a.id));
-
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-4xl font-bold">Artikel Tersimpan</h1>
-        <button onClick={() => navigate('/')} className="bg-amber-500 text-white px-8 py-4 rounded-2xl">Kembali</button>
+        <button onClick={() => navigate("/")} className="bg-amber-500 text-white px-8 py-4 rounded-2xl">Kembali</button>
       </div>
       {saved.length === 0 ? (
         <p className="text-center text-xl py-20">Belum ada artikel tersimpan.</p>
@@ -358,9 +600,7 @@ function ArticleDetail() {
   const { bookmarks, toggleBookmark } = useApp();
   const article = ALL_ARTICLES.find(a => String(a.id) === id);
   const saved = bookmarks.includes(article?.id);
-
   if (!article) return <div className="text-center py-20 text-2xl">Artikel tidak ditemukan</div>;
-
   return (
     <div className="max-w-3xl mx-auto px-6 py-12">
       <button onClick={() => navigate(-1)} className="text-amber-600 mb-6">← Kembali</button>
@@ -373,7 +613,7 @@ function ArticleDetail() {
           <p>{article.excerpt}</p>
           <p>Berita ini terus berkembang seiring banyaknya pihak yang menyampaikan tanggapan dan analisis mendalam.</p>
         </div>
-        <button onClick={() => toggleBookmark(article.id)} className={`mt-10 px-8 py-4 rounded-2xl ${saved ? 'bg-red-500' : 'bg-amber-500'} text-white`}>
+        <button onClick={() => toggleBookmark(article.id)} className={`mt-10 px-8 py-4 rounded-2xl ${saved ? "bg-red-500" : "bg-amber-500"} text-white`}>
           {saved ? "Hapus Bookmark" : "Simpan Bookmark"}
         </button>
       </div>
